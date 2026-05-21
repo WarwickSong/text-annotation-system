@@ -24,18 +24,21 @@ def _app_dir() -> Path:
 
 
 def _data_dir() -> Path:
+    # 从环境变量中获取数据目录
+    # 如果环境变量中没有指定数据目录，使用默认数据目录
+    # 如果是 macOS，使用 ~/Downloads/TextAnnotationSystem 作为数据目录
+    # 如果不是 macOS，使用当前目录的 data 子目录
     env_dir = os.environ.get("TAS_DATA_DIR")
     if env_dir:
         return Path(env_dir).expanduser().resolve()
-    pointer = _app_dir() / "data_dir.txt"
-    if pointer.exists():
-        configured = pointer.read_text(encoding="utf-8-sig").strip().lstrip("\ufeff")
-        if configured:
-            configured_path = Path(configured).expanduser()
-            if not configured_path.is_absolute():
-                configured_path = _app_dir() / configured_path
-            return configured_path.resolve()
-    return _app_dir() / "data"
+    if sys.platform == "darwin":
+        downloads_dir = Path.home() / "Downloads" / "TextAnnotationSystem"
+        downloads_dir.mkdir(parents=True, exist_ok=True)
+        return downloads_dir
+    else:
+        data_dir = _app_dir() / "data"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        return data_dir
 
 
 BASE_DIR = _resource_dir()
