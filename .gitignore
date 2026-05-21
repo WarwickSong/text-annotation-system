@@ -1,0 +1,39 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.cpython-*.pyc
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info/
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Sensitive files
+text_annotation_system/data/secret.dat
+text_annotation_system/data/outputs/
+text_annotation_system/data/uploads/
+text_annotation_system/data/tasks/
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
