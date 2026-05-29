@@ -1,0 +1,17 @@
+{
+  "id": "task_cefd2225",
+  "file_name": "社媒电商评论数据.csv",
+  "scheme_id": "scheme_nanfu_powerbank_context_scene_layer",
+  "scheme_name": "南孚充电宝场景分层标注",
+  "status": "terminated",
+  "total_rows": 112544,
+  "completed_rows": 6000,
+  "progress_percent": 5.3,
+  "target_column": "文本",
+  "upload_file_path": "upload_b6ea597c.csv",
+  "output_file_path": "output_026f7a0f",
+  "model": "deepseek-v4-pro",
+  "created_at": "2026-05-29T22:05:33.985641",
+  "finished_at": "2026-05-29T22:42:28.497044",
+  "duration": "36m 54s"
+}

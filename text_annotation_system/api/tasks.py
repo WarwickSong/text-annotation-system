@@ -44,7 +44,7 @@ async def create_task(body: dict):
     max_concurrency = body.get("max_concurrency", 10)
     try:
         max_concurrency = int(max_concurrency)
-        max_concurrency = max(1, min(max_concurrency, 100))
+        max_concurrency = max(1, min(max_concurrency, 1000))
     except (ValueError, TypeError):
         max_concurrency = 10
     if not all([file_id, column, scheme_id]):

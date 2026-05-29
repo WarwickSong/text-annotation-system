@@ -14,7 +14,7 @@ class BatchHandle:
 
     def __init__(self, total: int):
         self._total = total
-        self._results: List[Dict] = []
+        self._results: List[Optional[Dict]] = [None] * total
         self._errors: List[Dict] = []
         self._completed = 0
         self._done = False
@@ -27,7 +27,7 @@ class BatchHandle:
 
     @property
     def results(self) -> List[Dict]:
-        return list(self._results)
+        return [r for r in self._results if r is not None]
 
     @property
     def errors(self) -> List[Dict]:
@@ -41,7 +41,7 @@ class BatchHandle:
             "is_done": self._done,
             "completed": self._completed,
             "total": self._total,
-            "results": list(self._results),
+            "results": [r for r in self._results if r is not None],
             "errors": list(self._errors),
         }
 
@@ -49,17 +49,17 @@ class BatchHandle:
         """
         阻塞等待全部任务完成。
 
-        :return: 所有成功结果的列表
+        :return: 所有成功结果的列表，顺序与输入 prompts 一致
         """
         await self._done_event.wait()
-        return list(self._results)
+        return [r for r in self._results if r is not None]
 
     async def _add(self, index: int, messages: List[Dict],
                    answer: Optional[str] = None, error: Optional[Exception] = None):
         """统一的内部入口：写入一条结果（成功或失败），更新计数和完成状态。"""
         async with self._lock:
             if answer is not None:
-                self._results.append({"messages": messages, "answer": answer})
+                self._results[index] = {"messages": messages, "answer": answer}
             if error is not None:
                 self._errors.append({"index": index, "error": str(error)})
             self._completed += 1

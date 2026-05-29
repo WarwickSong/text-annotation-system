@@ -49,10 +49,10 @@
             </el-select>
           </el-form-item>
           <el-form-item label="并发数量">
-            <el-input-number v-model="concurrency" :min="1" :max="100" :step="1" />
+            <el-input-number v-model="concurrency" :min="1" :max="1000" :step="1" />
           </el-form-item>
           <el-form-item label="批次大小">
-            <el-input-number v-model="batchSize" :min="5" :max="100" :step="5" />
+            <el-input-number v-model="batchSize" :min="5" :max="1000" :step="5" />
           </el-form-item>
         </el-form>
       </div>
