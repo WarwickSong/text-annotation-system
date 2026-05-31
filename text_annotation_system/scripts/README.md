@@ -66,9 +66,9 @@ powershell -ExecutionPolicy Bypass -File scripts/build_windows.ps1
 脚本会自动：
 1. 停止正在运行的旧版本进程
 2. `npm install && npm run build` 构建前端
-3. `pip install -r requirements.txt` 安装 Python 依赖
+3. `python -m pip install -r requirements.txt` 安装 Python 依赖
 4. `python -m PyInstaller --clean --noconfirm text_annotation_system.spec` 打包
-5. 在 `dist/TextAnnotationSystem/` 下创建 `data_dir.txt` 和 `data/` 目录
+5. 在 `dist/TextAnnotationSystem/` 下创建 `data_dir.txt` 和 `data/` 目录（运行时 Windows 实际使用此目录）
 6. 将输出压缩为 `dist/TextAnnotationSystem-windows.zip`
 
 ### macOS
@@ -81,10 +81,14 @@ bash scripts/build_macos.sh
 ```
 
 脚本会自动：
-1. `npm install && npm run build` 构建前端
-2. `pip install -r requirements.txt` 安装 Python 依赖
-3. `python3 -m PyInstaller --clean text_annotation_system.spec` 打包
-4. 在 `dist/TextAnnotationSystem/` 下创建 `data_dir.txt` 和 `data/` 目录
+1. 停止正在运行的旧版本进程
+2. `npm install && npm run build` 构建前端
+3. `python3 -m pip install -r requirements.txt` 安装 Python 依赖
+4. `python3 -m PyInstaller --clean --noconfirm text_annotation_system.spec` 打包
+5. 在 `dist/TextAnnotationSystem/`（或 `.app/Contents/MacOS/`）下创建 `data_dir.txt` 和 `data/` 目录
+6. 将输出压缩为 `dist/TextAnnotationSystem-macos.zip`
+
+> **注意**：macOS 运行时数据目录默认为 `~/Downloads/TextAnnotationSystem/`，不使用 `data_dir.txt`。详见下方"路径解析"一节。
 
 ---
 
@@ -106,10 +110,10 @@ dist/
 │       ├── async_batch_inference/
 │       ├── uvicorn/ fastapi/ pandas/ ...
 │       └── *.pyd / *.dll               # C 扩展和动态库
-└── TextAnnotationSystem-windows.zip    # 压缩发布包（仅 Windows）
+└── TextAnnotationSystem-windows.zip    # Windows 压缩发布包
 ```
 
-macOS 下会额外生成 `TextAnnotationSystem.app` Bundle。
+macOS 下会额外生成 `TextAnnotationSystem.app` Bundle 和 `TextAnnotationSystem-macos.zip`。macOS 运行时数据存放在 `~/Downloads/TextAnnotationSystem/`，不在产物目录中。
 
 ---
 
@@ -118,7 +122,7 @@ macOS 下会额外生成 `TextAnnotationSystem.app` Bundle。
 | 平台 | 交付物 | 用户操作 |
 |------|--------|----------|
 | Windows | `TextAnnotationSystem-windows.zip` | 解压后双击 `TextAnnotationSystem.exe` |
-| macOS | `TextAnnotationSystem.app` 或 `TextAnnotationSystem/` 文件夹 | 双击 `TextAnnotationSystem.app` |
+| macOS | `TextAnnotationSystem-macos.zip`（含 `.app`） | 解压后双击 `TextAnnotationSystem.app` |
 
 用户端**无需安装** Python、Node.js 或任何依赖，应用完全自包含。
 
@@ -134,7 +138,8 @@ macOS 下会额外生成 `TextAnnotationSystem.app` Bundle。
 - **frozen 运行**（PyInstaller 打包后）：
   - 资源目录 → `sys._MEIPASS`（PyInstaller 解压后的临时目录）
   - 应用目录 → `sys.executable` 所在目录（即 exe 所在文件夹）
-  - 数据目录 → `data_dir.txt` 指向的路径（默认为 exe 同级的 `data/`）
+  - 数据目录（Windows） → `data_dir.txt` 指向的路径（默认为 exe 同级的 `data/`）
+  - 数据目录（macOS） → `~/Downloads/TextAnnotationSystem/`（避开 `.app` 包内只读权限问题，首次启动自动创建）
 
 ### PyInstaller 配置
 
@@ -151,3 +156,5 @@ macOS 下会额外生成 `TextAnnotationSystem.app` Bundle。
 - 用户数据（方案、上传文件、标注结果）不会混入系统文件
 - 应用可以读写数据目录而不受打包目录权限限制
 - 支持通过环境变量 `TAS_DATA_DIR` 自定义数据目录路径
+
+> **macOS 注意**：macOS 运行时不使用 `data_dir.txt`，数据目录直接硬编码为 `~/Downloads/TextAnnotationSystem/`，以避免 `.app` 包内权限问题。环境变量 `TAS_DATA_DIR` 在 macOS 上同样生效，优先级最高。

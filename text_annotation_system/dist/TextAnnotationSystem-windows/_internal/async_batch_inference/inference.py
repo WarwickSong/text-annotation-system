@@ -1,5 +1,5 @@
 import asyncio
-from typing import Any
+from typing import Any, Optional, List, Dict
 
 from openai import AsyncOpenAI
 from openai.types.chat import ChatCompletion
@@ -21,7 +21,7 @@ class AsyncBatchInference:
 
     def __init__(self, config: AsyncBatchConfig):
         self.config = config
-        self._client: AsyncOpenAI | None = None
+        self._client: Optional[AsyncOpenAI] = None
         self._semaphore = asyncio.Semaphore(config.max_concurrency)
 
     @property
@@ -38,7 +38,7 @@ class AsyncBatchInference:
             max_retries=self.config.max_retries,
         )
 
-    async def ask(self, messages: list[dict], **kwargs: Any) -> ChatCompletion:
+    async def ask(self, messages: List[Dict], **kwargs: Any) -> ChatCompletion:
         async with self._semaphore:
             return await self.client.chat.completions.create(
                 model=self.config.model,
@@ -49,14 +49,14 @@ class AsyncBatchInference:
     def parse_response(self, response: ChatCompletion) -> str:
         return response.choices[0].message.content
 
-    async def single(self, messages: list[dict], **kwargs: Any) -> dict:
+    async def single(self, messages: List[Dict], **kwargs: Any) -> Dict:
         response = await self.ask(messages, **kwargs)
         return {
             "messages": messages,
             "answer": self.parse_response(response),
         }
 
-    async def batch(self, prompts: list[list[dict]], **kwargs: Any) -> list[dict]:
+    async def batch(self, prompts: List[List[Dict]], **kwargs: Any) -> List[Dict]:
         """
         批量并发请求（阻塞版）。
 
@@ -66,7 +66,7 @@ class AsyncBatchInference:
         handle = await self.async_batch(prompts, **kwargs)
         return await handle.wait()
 
-    async def async_batch(self, prompts: list[list[dict]], **kwargs: Any) -> BatchHandle:
+    async def async_batch(self, prompts: List[List[Dict]], **kwargs: Any) -> BatchHandle:
         """
         后台批量推理（非阻塞版）。
 
@@ -79,7 +79,7 @@ class AsyncBatchInference:
         """
         handle = BatchHandle(total=len(prompts))
 
-        async def _run_one(index: int, prompt: list[dict]):
+        async def _run_one(index: int, prompt: List[Dict]):
             try:
                 result = await self.single(prompt, **kwargs)
                 await handle._add(index, prompt, answer=result["answer"])

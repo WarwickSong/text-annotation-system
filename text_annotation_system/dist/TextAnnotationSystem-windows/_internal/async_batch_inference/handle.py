@@ -1,4 +1,5 @@
 import asyncio
+from typing import Optional, List, Dict, Tuple
 
 
 class BatchHandle:
@@ -13,8 +14,8 @@ class BatchHandle:
 
     def __init__(self, total: int):
         self._total = total
-        self._results: list[dict] = []
-        self._errors: list[dict] = []
+        self._results: List[Optional[Dict]] = [None] * total
+        self._errors: List[Dict] = []
         self._completed = 0
         self._done = False
         self._lock = asyncio.Lock()
@@ -25,40 +26,40 @@ class BatchHandle:
         return self._done
 
     @property
-    def results(self) -> list[dict]:
-        return list(self._results)
+    def results(self) -> List[Dict]:
+        return [r for r in self._results if r is not None]
 
     @property
-    def errors(self) -> list[dict]:
+    def errors(self) -> List[Dict]:
         return list(self._errors)
 
-    def progress(self) -> tuple[int, int]:
+    def progress(self) -> Tuple[int, int]:
         return self._completed, self._total
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> Dict:
         return {
             "is_done": self._done,
             "completed": self._completed,
             "total": self._total,
-            "results": list(self._results),
+            "results": [r for r in self._results if r is not None],
             "errors": list(self._errors),
         }
 
-    async def wait(self) -> list[dict]:
+    async def wait(self) -> List[Dict]:
         """
         阻塞等待全部任务完成。
 
-        :return: 所有成功结果的列表
+        :return: 所有成功结果的列表，顺序与输入 prompts 一致
         """
         await self._done_event.wait()
-        return list(self._results)
+        return [r for r in self._results if r is not None]
 
-    async def _add(self, index: int, messages: list[dict],
-                   answer: str | None = None, error: Exception | None = None):
+    async def _add(self, index: int, messages: List[Dict],
+                   answer: Optional[str] = None, error: Optional[Exception] = None):
         """统一的内部入口：写入一条结果（成功或失败），更新计数和完成状态。"""
         async with self._lock:
             if answer is not None:
-                self._results.append({"messages": messages, "answer": answer})
+                self._results[index] = {"messages": messages, "answer": answer}
             if error is not None:
                 self._errors.append({"index": index, "error": str(error)})
             self._completed += 1

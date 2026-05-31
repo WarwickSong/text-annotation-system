@@ -1,0 +1,17 @@
+{
+  "id": "task_3f409037",
+  "file_name": "社媒电商评论数据_前4999行.csv",
+  "scheme_id": "scheme_nanfu_powerbank_context_facts",
+  "scheme_name": "南孚充电宝场景事实标注",
+  "status": "running",
+  "total_rows": 4999,
+  "completed_rows": 400,
+  "progress_percent": 8.0,
+  "target_column": "文本",
+  "upload_file_path": "upload_9c4b1f71.csv",
+  "output_file_path": "",
+  "model": "deepseek-v4-pro",
+  "created_at": "2026-05-31T13:40:16.404869",
+  "finished_at": "",
+  "duration": "1m 26s"
+}
